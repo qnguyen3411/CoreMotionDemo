@@ -14,9 +14,10 @@ enum SpinRate: Double {
   case verySlow =  0.06
   case slow = 0.1
   case normal = 0.15
-  case fast = 0.22
-  case veryFast = 0.3
+  case fast = 0.17
+  case veryFast = 0.22
 }
+
 
 class RingStack {
   var rings: [ImageRing] = []
@@ -42,6 +43,8 @@ class RingStack {
       numImage: Int.random(in: 5...9),
       radius: 400,
       center: view.center,
+      imageSize: randomSize(),
+      color: randomColor(),
       expandRateMultiplier: randomExpandRate(from: 1, to: 3),
       spinRate: randomSpinRate(),
       toView: view
@@ -57,6 +60,8 @@ class RingStack {
       numImage: Int.random(in: 5...9),
       radius: 20,
       center: view.center,
+      imageSize: randomSize(),
+      color: randomColor(),
       expandRateMultiplier: randomExpandRate(from: 1, to: 5),
       spinRate: randomSpinRate(),
       toView: view
@@ -88,6 +93,9 @@ class RingStack {
     }
   }
   
+  func randomSize() -> CGSize {
+    return CGSize(width: Int.random(in: 20...75), height: Int.random(in: 20...75))
+  }
   
   func randomSpinRate() -> SpinRate {
     // randomize spinRate
@@ -105,7 +113,19 @@ class RingStack {
     // add to lowbound
     return lowBound + randDouble
     
-    
+  }
+  
+  func randomColor() -> UIColor {
+    let colorsToGetRandomly = [
+      UIColor(red: 247.0/255.0, green: 244.0/255.0, blue: 234.0/255.0, alpha: 1.0),
+      UIColor(red: 222.0/255.0, green: 217.0/255.0, blue: 226.0/255.0, alpha: 1.0),
+      UIColor(red: 192.0/255.0, green: 185.0/255.0, blue: 221.0/255.0, alpha: 1.0),
+      UIColor(red: 128.0/255.0, green: 161.0/255.0, blue: 212.0/255.0, alpha: 1.0),
+      UIColor(red: 117.0/255.0, green: 201.0/255.0, blue: 200.0/255.0, alpha: 1.0)
+      
+    ]
+    let randIndex = Int.random(in: 0..<colorsToGetRandomly.count)
+    return colorsToGetRandomly[randIndex]
   }
   
   
@@ -119,7 +139,8 @@ class ImageRing {
   }
   var radius: Double
   var center: CGPoint
-  
+  var imageSize: CGSize
+  var color: UIColor
   // The multiplier for how fast the ring expand/contracts
   var expandRateMultiplier: Double
   
@@ -133,6 +154,8 @@ class ImageRing {
        numImage: Int,
        radius: Double,
        center:CGPoint,
+       imageSize: CGSize = CGSize(width: 50, height: 50),
+       color: UIColor = .white,
        expandRateMultiplier: Double = 1,
        spinRate: SpinRate = .none,
        toView view: UIView) {
@@ -141,16 +164,18 @@ class ImageRing {
     self.center = center
     self.expandRateMultiplier = expandRateMultiplier
     self.spinRate = spinRate
+    self.imageSize = imageSize
+    self.color = color
     
     // Make images
     for i in 0..<numImage {
       let thisImage = UIImageView(image: baseImageView.image)
       let imagePos = self.imagePosition(position: i, outOf: numImage)
       thisImage.frame = CGRect(
-        x: imagePos.x, y: imagePos.y, width: 50, height:50)
+        origin:imagePos, size: imageSize)
       
       // Debug backgorund color
-//      thisImage.backgroundColor = .blue
+      thisImage.backgroundColor = color
       
       self.images.append(thisImage)
       view.addSubview(thisImage)
@@ -164,7 +189,7 @@ class ImageRing {
         position: i, outOf: numImages, offSetInRadians: currSpinOffset)
       
       images[i].frame = CGRect(
-        x: imagePos.x, y: imagePos.y, width: 50, height:50)
+        origin:imagePos, size: imageSize)
     } // endfor
   }
   
@@ -178,6 +203,10 @@ class ImageRing {
     rotateImages(byRadians: data.attitude.pitch + Double.pi, speed: 4.0)
   }
   
+  
+  func updateSpin(accordingTo pitch: Double) {
+    
+  }
   
   // Return the image position for image `position` in `totalCount` images
   func imagePosition(position:Int, outOf totalCount: Int, offSetInRadians: Double = 0) -> CGPoint {
