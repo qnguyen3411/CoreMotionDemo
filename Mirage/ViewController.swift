@@ -9,6 +9,8 @@
 import UIKit
 import CoreMotion
 
+
+
 enum SpinRate: Double {
   case none = 0
   case verySlow =  0.06
@@ -20,14 +22,20 @@ enum SpinRate: Double {
 
 
 class RingStack {
+  var baseImageView: UIImageView
   var rings: [ImageRing] = []
   var containingView: UIView
+  var colorTheme : [UIColor]
   var numRings:Int {
     return rings.count
   }
   
-  init(numRings: Int, toView view: UIView, withBaseImage baseImage: UIImageView ) {
+  init(numRings: Int, toView view: UIView,
+       withBaseImage baseImage: UIImageView,
+       colorTheme:[UIColor] = [.white] ) {
     self.containingView = view
+    self.colorTheme = colorTheme
+    self.baseImageView = baseImage
     
     for i in 0..<numRings {
       addRingFromCenter(of: containingView, withBaseImage: baseImage)
@@ -45,7 +53,7 @@ class RingStack {
       center: view.center,
       imageSize: randomSize(),
       color: randomColor(),
-      expandRateMultiplier: randomExpandRate(from: 1, to: 3),
+      expandRateMultiplier: randomExpandRate(from: 1, to: 2),
       spinRate: randomSpinRate(),
       toView: view
     )
@@ -62,7 +70,7 @@ class RingStack {
       center: view.center,
       imageSize: randomSize(),
       color: randomColor(),
-      expandRateMultiplier: randomExpandRate(from: 1, to: 5),
+      expandRateMultiplier: randomExpandRate(from: 1, to: 2),
       spinRate: randomSpinRate(),
       toView: view
     )
@@ -82,24 +90,33 @@ class RingStack {
       
       if rings[i].tooSmall() {
         print("RING \(i) TOO SMALL")
-        addRingFromEdge(of: containingView, withBaseImage: rings[i].images[0])
+        addRingFromEdge(of: containingView, withBaseImage: baseImageView)
         removeRing(atIndex: i)
         
       } else if rings[i].tooBig() {
         print("RING \(i) TOO BIG")
-        addRingFromCenter(of: containingView, withBaseImage: rings[i].images[0])
+        addRingFromCenter(of: containingView, withBaseImage: baseImageView)
         removeRing(atIndex: i)
       }
     }
   }
   
+  func updateTheme(_ theme: [UIColor]) {
+    self.colorTheme = theme
+  }
+  
+  func updateBaseImage(_ newImage: UIImageView) {
+    self.baseImageView = newImage
+  }
+  
+  
   func randomSize() -> CGSize {
     return CGSize(width: Int.random(in: 20...75), height: Int.random(in: 20...75))
   }
   
-  func randomSpinRate() -> SpinRate {
+  func randomSpinRate() -> Double {
     // randomize spinRate
-    let spinRateToGetRandomly:[SpinRate] = [.verySlow, .slow, .normal, .fast, .veryFast]
+    let spinRateToGetRandomly:[Double] = [0.06, 0.08, 0.11, 0.14, 0.17]
     let randIndex = Int.random(in: 0..<spinRateToGetRandomly.count)
     return spinRateToGetRandomly[randIndex]
   }
@@ -116,14 +133,7 @@ class RingStack {
   }
   
   func randomColor() -> UIColor {
-    let colorsToGetRandomly = [
-      UIColor(red: 247.0/255.0, green: 244.0/255.0, blue: 234.0/255.0, alpha: 1.0),
-      UIColor(red: 222.0/255.0, green: 217.0/255.0, blue: 226.0/255.0, alpha: 1.0),
-      UIColor(red: 192.0/255.0, green: 185.0/255.0, blue: 221.0/255.0, alpha: 1.0),
-      UIColor(red: 128.0/255.0, green: 161.0/255.0, blue: 212.0/255.0, alpha: 1.0),
-      UIColor(red: 117.0/255.0, green: 201.0/255.0, blue: 200.0/255.0, alpha: 1.0)
-      
-    ]
+    let colorsToGetRandomly = colorTheme
     let randIndex = Int.random(in: 0..<colorsToGetRandomly.count)
     return colorsToGetRandomly[randIndex]
   }
@@ -148,7 +158,7 @@ class ImageRing {
   var currSpinOffset: Double = 0
   
   // The rate at which the images spin around the ring
-  var spinRate = SpinRate.none
+  var spinRate = 0.0
   
   init(baseImageView: UIImageView,
        numImage: Int,
@@ -157,7 +167,7 @@ class ImageRing {
        imageSize: CGSize = CGSize(width: 50, height: 50),
        color: UIColor = .white,
        expandRateMultiplier: Double = 1,
-       spinRate: SpinRate = .none,
+       spinRate: Double = 0.0,
        toView view: UIView) {
     
     self.radius = radius
@@ -194,18 +204,19 @@ class ImageRing {
   }
   
   func spin() {
-    currSpinOffset += spinRate.rawValue
+    currSpinOffset += spinRate
   }
   
   
   func updateToCMData(_ data: CMDeviceMotion) {
     updateRadius(data.attitude.pitch * 10 * expandRateMultiplier)
-    rotateImages(byRadians: data.attitude.pitch + Double.pi, speed: 4.0)
+    rotateImages(byRadians: data.attitude.pitch + Double.pi, speed: 12.0)
+    updateSpin(accordingTo: data.attitude.pitch)
   }
   
   
   func updateSpin(accordingTo pitch: Double) {
-    
+    spinRate = spinRate * sin(pitch) * 3 + 0.005
   }
   
   // Return the image position for image `position` in `totalCount` images
@@ -245,36 +256,69 @@ class ImageRing {
 
 class ViewController: UIViewController {
   
-  @IBOutlet weak var testImage: UIImageView!
+  @IBOutlet var imageList: [UIImageView]!
+  
+  @IBAction func themeButtonPressed(_ sender: UIButton) {
+    for ringStack in ringStacks {
+      ringStack.updateTheme(themeList[themeCycle])
+    }
+    
+    themeCycle += 1
+    if themeCycle > themeList.count - 1 {
+      themeCycle = 0
+    }
+    
+  }
+  
+  @IBAction func imgButtonPressed(_ sender: UIButton) {
+    for ringStack in ringStacks {
+      ringStack.updateBaseImage(imageList[imgCycle])
+    }
+    
+    imgCycle += 1
+    if imgCycle > imageList.count - 1 {
+      imgCycle = 0
+    }
+  }
+  
+  
+  var ringStacks:[RingStack] = []
+  var themeCycle = 0
+  var imgCycle = 0
   
   var motionManager = CMMotionManager()
   let opQueue = OperationQueue()
   
   
   override func viewDidLoad() {
-      super.viewDidLoad()
+    super.viewDidLoad()
     guard let mainView = view else {
       return
     }
     
-
-      let ringStack = RingStack(
-        numRings: 6, toView: mainView, withBaseImage: testImage)
+    ringStacks.append(
+      RingStack(numRings: 6, toView: mainView,
+        withBaseImage: imageList[0], colorTheme: primaryTheme)
+//      RingStack(numRings: 3, toView: mainView,
+//        withBaseImage: butterfly, colorTheme: pastelsTheme),
+      )
     
-      testImage.isHidden = true
-      if motionManager.isDeviceMotionAvailable {
-        print("We can detect device motion")
-        startReadingMotionData(for: ringStack)
-      }
-      else {
-        print("We cannot detect device motion")
-      }
+    for image in imageList {
+      image.isHidden = true
+    }
+    if motionManager.isDeviceMotionAvailable {
+      print("We can detect device motion")
+      startReadingMotionData(for: ringStacks)
+    }
+    else {
+      print("We cannot detect device motion")
+    }
   }
   
   
-  func startReadingMotionData(for ringStack: RingStack) {
+  func startReadingMotionData(for ringStacks: [RingStack]) {
     // set read speed
-    motionManager.deviceMotionUpdateInterval = 0.1
+    motionManager.deviceMotionUpdateInterval = Double(1/24)
     // start reading
     motionManager.startDeviceMotionUpdates(to: opQueue) { (data: CMDeviceMotion?, error: Error?) in
       
@@ -283,10 +327,12 @@ class ViewController: UIViewController {
       }
       // Send to main thread
       DispatchQueue.main.async {
-        ringStack.checkAndRefreshRing()
-        for i in 0..<ringStack.numRings {
-          ringStack.rings[i].updateToCMData(mydata)
-          ringStack.rings[i].spin()
+        for ringStack in ringStacks {
+          ringStack.checkAndRefreshRing()
+          for i in 0..<ringStack.numRings {
+            ringStack.rings[i].updateToCMData(mydata)
+            ringStack.rings[i].spin()
+          }
         }
       }
     

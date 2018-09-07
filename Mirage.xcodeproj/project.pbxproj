@@ -14,6 +14,7 @@
 		669020482141DFFF00993B0B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 669020462141DFFF00993B0B /* LaunchScreen.storyboard */; };
 		669020532141DFFF00993B0B /* MirageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 669020522141DFFF00993B0B /* MirageTests.swift */; };
 		6690205E2141E00000993B0B /* MirageUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6690205D2141E00000993B0B /* MirageUITests.swift */; };
+		E3D25EDF214301A4009BFD29 /* theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D25EDE214301A4009BFD29 /* theme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		669020592141E00000993B0B /* MirageUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MirageUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6690205D2141E00000993B0B /* MirageUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirageUITests.swift; sourceTree = "<group>"; };
 		6690205F2141E00000993B0B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E3D25EDE214301A4009BFD29 /* theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = theme.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +102,7 @@
 				6690203D2141DFFD00993B0B /* AppDelegate.swift */,
 				6690203F2141DFFE00993B0B /* ViewController.swift */,
 				669020412141DFFE00993B0B /* Main.storyboard */,
+				E3D25EDE214301A4009BFD29 /* theme.swift */,
 				669020442141DFFF00993B0B /* Assets.xcassets */,
 				669020462141DFFF00993B0B /* LaunchScreen.storyboard */,
 				669020492141DFFF00993B0B /* Info.plist */,
@@ -257,6 +260,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				669020402141DFFE00993B0B /* ViewController.swift in Sources */,
+				E3D25EDF214301A4009BFD29 /* theme.swift in Sources */,
 				6690203E2141DFFD00993B0B /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
